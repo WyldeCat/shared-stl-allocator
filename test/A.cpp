@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <vector>
+#include <map>
 #include <functional>
 
 #include "../include/shared_stl.hpp"
@@ -7,10 +8,11 @@
 
 int main( )
 {
-  std::vector<int, shared_stl_allocator<int, 1234> > v;
-  v.push_back(1);
-  v.push_back(2);
-  printf("%d\n",v.front());
-  printf("%d\n",v.back());
+  typedef std::map<int, int, std::less<int>, shared_stl_allocator<std::pair<int,int>, 5678> > my_map;
+  shared_stl<my_map, 1543> my_allocator;
+
+  my_map *abc = my_allocator.attach();
+  (*abc)[0]++;
+  printf("%d\n",(*abc)[0]);
   return 0;
 }

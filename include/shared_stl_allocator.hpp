@@ -1,6 +1,6 @@
 #include "memory_pool.hpp"
 
-template<typename T, int key>
+template<typename T,int key>
 class shared_stl_allocator
 {
 private:
@@ -15,7 +15,7 @@ public:
   typedef const T& const_reference;
 
 
-  template<class U, int k> struct rebind { typedef shared_stl_allocator<U, k> other; };
+  template<class U, int k=0> struct rebind { typedef shared_stl_allocator<U, k> other; };
 
   pointer address(reference value)       const { return &value; }
   const_pointer address(const_reference value) const { return &value; }
