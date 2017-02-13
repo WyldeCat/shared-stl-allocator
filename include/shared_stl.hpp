@@ -23,15 +23,8 @@ template<class T, int key> T*  shared_stl<T,key>::ptr;
 template<class T, int key>
 T* shared_stl<T,key>::attach()
 {
-  if(ptr == NULL)
-  {
-    shm_id = shmget((key_t)key, sizeof(T), 0666 | IPC_CREAT | IPC_EXCL);    
-    if(shm_id == -1)
-    {
-      return NULL;
-    }
-    ptr = (T*)shmat(shm_id, (void *)0, 0);
-  }
+  shm_id = shmget((key_t)key, sizeof(T), 0666 | IPC_CREAT);
+  ptr = (T*)shmat(shm_id, (void *)0, 0);
   return ptr;
 }
 
