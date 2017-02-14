@@ -1,3 +1,6 @@
+#ifndef _MEMORY_POOL_
+#define _MEMORY_POOL_
+
 #include <sys/shm.h>
 #include <sys/ipc.h>
 #include <sys/stat.h>
@@ -7,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-template<typename T, long key>
+template<class T, long key>
 class memory_pool
 {
 public:
@@ -108,17 +111,17 @@ private:
   static void set_bits(char *first_flag, int idx, int n, int val);
 };
 
-template<typename T, long key>
+template<class T, long key>
 int memory_pool<T, key>::shm_id;
 
-template<typename T, long key>
+template<class T, long key>
 void **memory_pool<T, key>::head = NULL;
 
-template<typename T, long key>
+template<class T, long key>
 const int memory_pool<T, key>::total_size = sizeof(T)*(1<<16) + (1<<13) + sizeof(void*) + sizeof(int);
 
 
-template<typename T, long key>
+template<class T, long key>
 void memory_pool<T, key>::set_bits(char *first_flag, int idx, int n, int val)
 {
   int i, t = (idx%8 + n)/8 - 1;
@@ -135,3 +138,5 @@ void memory_pool<T, key>::set_bits(char *first_flag, int idx, int n, int val)
   if(val==0) for(i=0;i<(idx%8+n)%8;i++)(*target_flag)&=(~(1<<(i-1)));
   else for(i=0;i<(idx%8+n)%8;i++)(*target_flag)|=((1<<(i-1)));
 }
+
+#endif

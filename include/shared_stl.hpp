@@ -1,3 +1,6 @@
+#ifndef _SHARED_STL_
+#define _SHARED_STL_
+
 #include <sys/shm.h>
 #include <sys/ipc.h>
 #include <sys/mman.h>
@@ -57,3 +60,5 @@ void shared_stl<T,key>::shutdown()
 {
   shm_unlink(std::to_string(key).c_str());
 }
+
+#endif

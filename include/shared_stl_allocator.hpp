@@ -1,3 +1,6 @@
+#ifndef _SHARED_STL_ALLOCATOR_
+#define _SHARED_STL_ALLOCATOR_
+
 #include "memory_pool.hpp"
 
 template<typename T,long key>
@@ -56,5 +59,12 @@ public:
   }
 };
 
-template<typename T, long key>
+template<class T, long key>
 memory_pool<T, key> shared_stl_allocator<T, key>::mem;
+
+template<typename T, long key>
+inline bool operator==(const shared_stl_allocator<T, key>&, const shared_stl_allocator<T, key> &){ return true; }
+
+template<typename T, long key>
+inline bool operator!=(const shared_stl_allocator<T, key>&, const shared_stl_allocator<T, key> &){ return false; }
+#endif
