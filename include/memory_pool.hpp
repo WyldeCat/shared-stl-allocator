@@ -10,10 +10,21 @@ public:
   {
     if(head == NULL)
     {
-      shm_id = shmget((key_t)key, total_size, 0666 | IPC_CREAT);
-      head = (void **)shmat(shm_id, (void *)0, 0);
-      memset(head, 0, total_size);
+      fprintf(stderr,"memory_pool()\n");
+      shm_id = shmget((key_t)key, total_size, 0666 | IPC_CREAT | IPC_EXCL);
+      if(shm_id == -1) 
+      {
+        shm_id = shmget((key_t)key, total_size, 0666 | IPC_CREAT);
+        head = (void **)shmat(shm_id, (void *)0, 0);
+      }
+      else 
+      {
+        fprintf(stderr,"memset\n");
+        head = (void **)shmat(shm_id, (void *)0, 0);
+        memset(head, 0, total_size);
+      }
     }
+    fprintf(stderr,"head: %d\n",head);
   }
   ~memory_pool(){}
 
