@@ -2,6 +2,7 @@
 
 int main( )
 {
-  char a = -1;
-  printf("%d\n",a&(1<<8));
+  void *a=0;
+  a++;
+  printf("%d\n",a);
 }

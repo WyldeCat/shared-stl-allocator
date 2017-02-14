@@ -1,8 +1,13 @@
 #include <sys/shm.h>
 #include <sys/ipc.h>
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <sys/types.h>
+#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
-template<typename T, int key>
+template<typename T, long key>
 class memory_pool
 {
 public:
@@ -10,21 +15,19 @@ public:
   {
     if(head == NULL)
     {
-      fprintf(stderr,"memory_pool()\n");
-      shm_id = shmget((key_t)key, total_size, 0666 | IPC_CREAT | IPC_EXCL);
-      if(shm_id == -1) 
+      shm_id = shm_open(std::to_string(key).c_str(), O_EXCL | O_CREAT | O_RDWR, 0666);
+
+      if(shm_id == -1) // already exists
       {
-        shm_id = shmget((key_t)key, total_size, 0666 | IPC_CREAT);
-        head = (void **)shmat(shm_id, (void *)0, 0);
-      }
+        shm_id = shm_open(std::to_string(key).c_str(), O_CREAT | O_RDWR, 0666);
+        head = (void **)mmap((void*)key, total_size, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_SHARED, shm_id, 0); }
       else 
       {
-        fprintf(stderr,"memset\n");
-        head = (void **)shmat(shm_id, (void *)0, 0);
+        ftruncate(shm_id, total_size);
+        head = (void **)mmap((void*)key, total_size, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_SHARED, shm_id, 0);
         memset(head, 0, total_size);
       }
     }
-    fprintf(stderr,"head: %d\n",head);
   }
   ~memory_pool(){}
 
@@ -32,9 +35,10 @@ public:
   {
     void **tmp = head;
     void **prev = NULL;
-    int i, shm_id;
+    int i, shm_id,key_count = 0;
     while(tmp != NULL)
     {
+      key_count++;
       char *now = (char*)((int*)(tmp + 1) + 1);
       T *first_obj = (T*)(now + (1<<13));
       int cnt = 0;
@@ -55,9 +59,10 @@ public:
       prev = tmp;
       tmp = (void **)*tmp;
     }
-
-    shm_id = shmget(0 , total_size, 0666 | IPC_CREAT);
-    *prev = shmat(shm_id, (void *)0, 0);
+    shm_id = shm_open(std::to_string(key + key_count).c_str(), O_EXCL | O_CREAT | O_RDWR, 0666);
+    ftruncate(shm_id, total_size);
+    *prev = mmap((void*)key, total_size, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_SHARED, shm_id, 0);
+     
     tmp = (void **)*prev;
 
     char *now = (char*)((int*)(tmp + 1) + 1);
@@ -85,13 +90,13 @@ public:
 
   static void shutdown()
   {
+    fprintf(stderr,"shutdown!!\n");
     void **tmp = head;
+    int key_count = 0;
     while(tmp != NULL)
     {
       void *next = *tmp;
-      int shm_id = *(int*)(tmp+1);
-      shmctl(shm_id, IPC_RMID, NULL);
-      shmdt(tmp);
+      shm_unlink(std::to_string(key + key_count).c_str());
       tmp = (void**)next;
     }
   }
@@ -103,19 +108,17 @@ private:
   static void set_bits(char *first_flag, int idx, int n, int val);
 };
 
-template<typename T, int key>
+template<typename T, long key>
 int memory_pool<T, key>::shm_id;
 
-template<typename T, int key>
+template<typename T, long key>
 void **memory_pool<T, key>::head = NULL;
 
-
-
-template<typename T, int key>
+template<typename T, long key>
 const int memory_pool<T, key>::total_size = sizeof(T)*(1<<16) + (1<<13) + sizeof(void*) + sizeof(int);
 
 
-template<typename T, int key>
+template<typename T, long key>
 void memory_pool<T, key>::set_bits(char *first_flag, int idx, int n, int val)
 {
   int i, t = (idx%8 + n)/8 - 1;
