@@ -36,7 +36,6 @@ public:
 
   static T* alloc(int n)
   {
-    fprintf(stderr,"alloc start() %d\n",n);
     void **tmp = head;
     void **prev = NULL;
     int i, shm_id,key_count = 0;
@@ -53,7 +52,6 @@ public:
           cnt++;
           if(cnt==n) 
           {
-            fprintf(stderr,"alloc complete() %d\n",first_obj + i);
             set_bits((char*)((int*)(tmp + 1) + 1), i, n, 1);
             return first_obj + i;
           }
@@ -72,14 +70,12 @@ public:
 
     char *now = (char*)((int*)(tmp + 1) + 1);
     set_bits(now, 0, n, 1);
-    fprintf(stderr,"alloc() complete  : %d\n",now + (1<<13));
     return (T*)(now + (1<<13));
 
   }
 
   static void free(T* p, size_t n)
   {
-    fprintf(stderr,"free()\n");
     void **tmp = head;
     while(tmp != NULL)
     {
@@ -93,12 +89,10 @@ public:
       }
       tmp = (void**)*tmp;
     }
-    fprintf(stderr,"complete free()\n");
   }
 
   static void shutdown()
   {
-    fprintf(stderr,"shutdown!!\n");
     void **tmp = head;
     int key_count = 0;
     while(tmp != NULL)
@@ -130,20 +124,11 @@ template<class T, long key>
 void memory_pool<T, key>::set_bits(char *first_flag, int idx, int n, int val)
 {
                                                                       //   0   1 1
-  fprintf(stderr,"set_bits() ff: %d, idx: %d, n: %d, val: %d\n",first_flag,idx,n,val);
   int i, t = (idx%8 + n)/8 - 1;
   char *target_flag = first_flag + idx/8;
 
   if(val==0) for(i=idx%8;i<8 && i<idx%8+n;i++) (*target_flag)&=(~(1<<i));
-  else 
-  {
-    for(i=idx%8;i<8 && i<idx%8+n;i++) 
-    {
-      fprintf(stderr,"before *target_flag:%d\n",*target_flag);
-      (*target_flag)|=(1<<i);
-      fprintf(stderr,"after *target_flag:%d\n\n",*target_flag);
-    }
-  }
+  else for(i=idx%8;i<8 && i<idx%8+n;i++) (*target_flag)|=(1<<i);
   if(i==8) target_flag++;
 
   for(i=0;i<t;i++, target_flag++) *target_flag = (val==0 ? 0 : -1); 
@@ -152,7 +137,6 @@ void memory_pool<T, key>::set_bits(char *first_flag, int idx, int n, int val)
 
   if(val==0) for(i=0;i<(idx%8+n)%8;i++)(*target_flag)&=(~(1<<i));
   else for(i=0;i<(idx%8+n)%8;i++)(*target_flag)|=(1<<i);
-  fprintf(stderr,"complete set_bits()\n");
 }
 
 #endif
