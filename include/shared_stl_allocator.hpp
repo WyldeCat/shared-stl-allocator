@@ -35,31 +35,23 @@ public:
   pointer allocate(size_type n, const void* = 0)
   {
     if(n==0) return NULL;
-    fprintf(stderr,"allocate()\n");
     pointer p = (pointer)mem.alloc(n);
-    fprintf(stderr,"complete allocate()\n");
     return p;
   }
 
   void construct(pointer p, const T& val)
   {
-    fprintf(stderr,"construct()\n");
     new((void*)p)T(val);
-    fprintf(stderr,"complete construct()\n");
   }
 
   void destroy(pointer p)
   {
-    fprintf(stderr,"destroy()\n");
     p->~T();
-    fprintf(stderr,"complete destroy()\n");
   }
 
   void deallocate(pointer p, size_type n)
   {
-    fprintf(stderr,"deallocate()\n");
     mem.free(p,n);
-    fprintf(stderr,"complete deallocate()\n");
   }
 
   static void shutdown()
