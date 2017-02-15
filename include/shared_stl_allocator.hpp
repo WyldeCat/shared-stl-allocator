@@ -54,6 +54,7 @@ public:
     mem.free(p,n);
   }
 
+  static void attach(){mem;}
   static void shutdown()
   {
     mem.shutdown();
