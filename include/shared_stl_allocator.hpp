@@ -6,9 +6,10 @@
 template<typename T,long key>
 class shared_stl_allocator
 {
-private:
+public:
     static memory_pool<T, key> mem;
 public:
+    static int test;
   typedef T value_type;
   typedef T* pointer;
   typedef T& reference;
@@ -46,6 +47,10 @@ public:
 
   void destroy(pointer p)
   {
+    if( p == (pointer)0xccffe29be9)
+    {
+      fprintf(stderr,"!!destroy!!\n");
+    }
     p->~T();
   }
 
@@ -63,6 +68,9 @@ public:
 
 template<class T, long key>
 memory_pool<T, key> shared_stl_allocator<T, key>::mem;
+
+template<class T, long key>
+int shared_stl_allocator<T, key>::test=3;
 
 template<typename T, long key>
 inline bool operator==(const shared_stl_allocator<T, key>&, const shared_stl_allocator<T, key> &){ return true; }
